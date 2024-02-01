@@ -3,7 +3,7 @@ const session = require('express-session');
 const routes = require('./routes/users.js');
 const { hash } = require('./crypto/config');
 const app = express();
-const PORT = 4000;
+const PORT = 4002;
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 

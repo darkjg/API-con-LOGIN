@@ -3,7 +3,7 @@ const router = express.Router();
 const { generateToken, verifyToken } = require('../middlewares/authMiddleware');
 const { users } = require('../data/users');
 const api = require("../API/api.js");
-
+const  axios  = require("axios");
 
 router.get('/', (req, res) => {
     const Template = `
@@ -54,30 +54,31 @@ router.get('/search', verifyToken, (req, res) => {
 
     res.send(`
     <h1>Buscador Rick & Morty</h1>
-    <label for="characterName">Introduce el nombre de tu personaje</label>
-    <input type="text" id="characterName" placeholder="Rick">
-    <form action="/character/busqueda" method="post">
+    <label for="characterName">Introduce el nombre de tu personaje</label>   
+    <form action="/busqueda" method="post">
+        <input type="text" id="characterName" name="name" placeholder="Rick">
         <button  type="submit">Obtener Informacion</button>
     </form>
     `)
 })
-const  nombre =""
-router.post("/character/busqueda ", verifyToken, async (req, res) => {
-    console.log("holaaaa")
-    nombre=  req.params.nombre;
-    res.redirect("/character/:nombre")
+
+router.post("/busqueda",async function(req, res) {
+    
+    res.redirect('/character/'+req.body.name);
+   
+   
 })
 
+router.get("/character/:nombre", verifyToken, async (req, res) => {
+   
+    const charactName = req.params.nombre;    
+ 
 
-router.get("/character/:nombre ", verifyToken, async (req, res) => {
-    const url = "https://rickandmortyapi.com/api/character/?name=";
-    const charactName = nombre;
-
-    const urlEnd = `${url}${charactName}`
-
+   
     try {
-        const response = await axios.get(urlEnd);
-        const { results: { 0: { name, status, species, gender, image, origin } } } = response.data
+
+        const results=  await api.findCharacter(charactName)
+        const { results: { 0: { name, status, species, gender, image, origin } } } = results
         res.send(`
         <h2>${name}</h2>
         <img src="${image}" alt="${name}"/>
@@ -86,8 +87,17 @@ router.get("/character/:nombre ", verifyToken, async (req, res) => {
         <p>${gender}</p>
         <p>${origin.name}</p>
         `)
-    } catch {
+        if (originNombre != "unknown") {
+            info.innerHTML += `
+        <p>${originNombre}</p> 
+        `}
 
+    } catch {
+        res.status(404).json({error:"Personaje no encontrado"})
     }
 })
+
+
+
+
 module.exports = router;
